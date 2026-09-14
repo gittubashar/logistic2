@@ -195,8 +195,9 @@ $pageTitle = $pageTitle ?? $site['title'];
 <header class="site-header sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-xl transition-shadow">
     <div class="mx-auto flex w-full max-w-[1480px] items-center justify-between gap-4 px-4 py-3 lg:px-8">
         <a class="flex items-center gap-3 text-ink" href="<?php echo e(base_url('index.php')); ?>">
-            <?php if (!empty($site['logo_image'])): ?>
-                <img class="h-12 w-auto max-w-[min(520px,58vw)] object-contain sm:h-14" src="<?php echo e(base_url($site['logo_image'])); ?>" alt="<?php echo e($site['title']); ?>">
+            <?php $headerLogo = $site['logo_image'] ?: ($site['footer_logo_image'] ?? ''); ?>
+            <?php if (!empty($headerLogo)): ?>
+                <img class="h-12 w-auto max-w-[min(520px,58vw)] object-contain sm:h-14" src="<?php echo e(base_url($headerLogo)); ?>" alt="<?php echo e($site['title']); ?>">
             <?php else: ?>
                 <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy text-base font-black text-amber-300 sm:h-12 sm:w-12 sm:text-lg"><?php echo e($site['logo_text']); ?></span>
                 <span>

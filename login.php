@@ -35,7 +35,12 @@ $pageTitle = 'Login - M/S B. S. Trading';
 <body class="grid min-h-screen place-items-center bg-slate-100 px-4">
     <form class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-xl" method="post">
         <div class="mb-8 text-center">
-            <div class="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-slate-900 text-xl font-black text-emerald-400"><?php echo e($site['logo_text']); ?></div>
+            <?php $loginLogo = $site['logo_image'] ?: ($site['footer_logo_image'] ?? ''); ?>
+            <?php if ($loginLogo): ?>
+                <div class="mx-auto mb-4 grid min-h-14 min-w-14 max-w-[220px] place-items-center rounded-2xl border border-slate-200 bg-white p-2"><img class="max-h-16 w-auto max-w-full object-contain" src="<?php echo e(base_url($loginLogo)); ?>" alt="<?php echo e($site['title']); ?>"></div>
+            <?php else: ?>
+                <div class="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-slate-900 text-xl font-black text-emerald-400"><?php echo e($site['logo_text']); ?></div>
+            <?php endif; ?>
             <h1 class="text-2xl font-black text-slate-900">Admin Login</h1>
         <p class="mt-1 text-sm text-slate-500">Sign in to manage website content.</p>
         </div>
