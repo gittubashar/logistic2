@@ -92,6 +92,13 @@ if ($teamMembers) {
     save_team_members(default_team_members($team));
 }
 
+$concernItems = migration_json_file(__DIR__ . '/../uploads/our-concerns.json');
+if ($concernItems) {
+    save_our_concerns($concernItems);
+} elseif (!our_concerns([], false)) {
+    save_our_concerns(default_our_concerns($concerns));
+}
+
 $masonryItems = migration_json_file(__DIR__ . '/../uploads/masonry-gallery.json');
 if ($masonryItems) {
     save_masonry_gallery_items($masonryItems);

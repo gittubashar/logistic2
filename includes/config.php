@@ -243,6 +243,22 @@ $team = [
 require_once __DIR__ . '/team-members.php';
 $team = team_members($team);
 
+$concerns = [
+    ['title' => 'BANDARBAN AGENCY'],
+    ['title' => 'M/S PURABI RICE AGENCY'],
+    ['title' => 'M/S BANDARBAN AUTO RICE MILL'],
+    ['title' => 'M/S SUKHENDU BIKASH DAS'],
+    ['title' => 'M/S SHAROTHI ENTERPRISE'],
+    ['title' => 'PURABI CHAIR COACH'],
+    ['title' => 'PURABI TRANSPORT AGENCY'],
+    ['title' => 'HOTEL HILL BIRD'],
+    ['title' => 'HOTEL PURABI'],
+    ['title' => 'HOTEL HILL VIEW'],
+];
+
+require_once __DIR__ . '/our-concerns.php';
+$concerns = our_concerns($concerns);
+
 $offices = [
     'Chattogram Office' => '1200 Haji Sobhan Soudagar Road, Chaktai, Chattogram, Bangladesh.',
 ];

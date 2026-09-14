@@ -128,6 +128,27 @@ function db_schema_ensure(): bool
         $tryAlter("ALTER TABLE logistic_team_members ADD COLUMN visible TINYINT(1) NOT NULL DEFAULT 1 AFTER sort_order");
         $tryAlter("ALTER TABLE logistic_team_members ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER visible");
         $pdo->exec("
+            CREATE TABLE IF NOT EXISTS logistic_our_concerns (
+                id VARCHAR(80) PRIMARY KEY,
+                title VARCHAR(190) NOT NULL,
+                image VARCHAR(255) DEFAULT '',
+                website VARCHAR(255) DEFAULT '',
+                social_link VARCHAR(255) DEFAULT '',
+                about_concern TEXT,
+                sort_order INT NOT NULL DEFAULT 1,
+                visible TINYINT(1) NOT NULL DEFAULT 1,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+        $tryAlter("ALTER TABLE logistic_our_concerns ADD COLUMN title VARCHAR(190) NOT NULL DEFAULT '' AFTER id");
+        $tryAlter("ALTER TABLE logistic_our_concerns ADD COLUMN image VARCHAR(255) DEFAULT '' AFTER title");
+        $tryAlter("ALTER TABLE logistic_our_concerns ADD COLUMN website VARCHAR(255) DEFAULT '' AFTER image");
+        $tryAlter("ALTER TABLE logistic_our_concerns ADD COLUMN social_link VARCHAR(255) DEFAULT '' AFTER website");
+        $tryAlter("ALTER TABLE logistic_our_concerns ADD COLUMN about_concern TEXT AFTER social_link");
+        $tryAlter("ALTER TABLE logistic_our_concerns ADD COLUMN sort_order INT NOT NULL DEFAULT 1 AFTER about_concern");
+        $tryAlter("ALTER TABLE logistic_our_concerns ADD COLUMN visible TINYINT(1) NOT NULL DEFAULT 1 AFTER sort_order");
+        $tryAlter("ALTER TABLE logistic_our_concerns ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER visible");
+        $pdo->exec("
             CREATE TABLE IF NOT EXISTS logistic_masonry_gallery (
                 id VARCHAR(80) PRIMARY KEY,
                 title VARCHAR(190) DEFAULT '',

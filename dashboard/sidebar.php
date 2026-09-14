@@ -23,6 +23,9 @@
         <a class="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-white/10" href="<?php echo e(base_url('dashboard/page-manager.php')); ?>">
             <i class="fa-solid fa-file-pen w-5 text-emerald-300"></i>Page Manager
         </a>
+        <a class="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-white/10" href="<?php echo e(base_url('dashboard/our-concern.php')); ?>">
+            <i class="fa-solid fa-building-columns w-5 text-emerald-300"></i>Our Concern
+        </a>
         <a class="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-white/10" href="<?php echo e(base_url('dashboard/post-manager.php')); ?>">
             <i class="fa-solid fa-newspaper w-5 text-emerald-300"></i>Post Manager
         </a>

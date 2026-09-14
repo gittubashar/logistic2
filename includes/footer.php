@@ -24,11 +24,10 @@
                 <h2 class="text-xs font-bold uppercase tracking-[.2em] text-amber-300">Explore</h2>
                 <nav class="mt-6 grid gap-3 text-sm font-semibold text-slate-300">
                     <a class="w-max transition hover:text-amber-300" href="<?php echo e(base_url('pages/about.php')); ?>">About company</a>
-                    <a class="w-max transition hover:text-amber-300" href="<?php echo e(base_url('pages/our-concern.php')); ?>">Our concern</a>
                     <a class="w-max transition hover:text-amber-300" href="<?php echo e(base_url('services.php')); ?>">Our services</a>
                     <a class="w-max transition hover:text-amber-300" href="<?php echo e(base_url('pages/membership-certificates.php')); ?>">Credentials</a>
                     <a class="w-max transition hover:text-amber-300" href="<?php echo e(base_url('pages/team.php')); ?>">Leadership team</a>
-                    <a class="w-max transition hover:text-amber-300" href="<?php echo e(base_url('blog.php')); ?>">News & insights</a>
+                    <a class="w-max transition hover:text-amber-300" href="<?php echo e(base_url('pages/our-concern.php')); ?>">Our concern</a>
                     <a class="w-max transition hover:text-amber-300" href="<?php echo e(base_url('pages/contact.php')); ?>">Contact</a>
                 </nav>
             </div>

@@ -87,7 +87,7 @@ function page_defaults(): array
             'header_text' => 'The businesses and concerns associated with M/S B. S. TRADING.',
             'header_image' => 'uploads/page-header-bg.svg',
             'content' => [],
-            'content_html' => '<ul><li>M/S Bandarban Agency</li><li>Purabi Chair Coach</li><li>M/S Purabi Rice Agency</li><li>Purabi Transport Agency</li><li>M/S Bandarban Auto Rice Mill</li><li>Hotel Hill Bird</li><li>M/S Sukhendu Bikash Das</li><li>Hotel Purabi</li><li>M/S Sharothi Enterprise</li><li>Hotel Hill View</li></ul>',
+            'content_html' => '',
         ],
         'international_freight_forwarding_agent' => [
             'label' => 'Licensed Customs Shipping Agent Page',
