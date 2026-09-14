@@ -157,3 +157,18 @@ function concern_external_url(string $url): string
 
     return 'https://' . ltrim($url, '/');
 }
+
+function our_concern_summary(array $concern, int $minimumWords = 15): string
+{
+    $summary = trim((string) ($concern['about_concern'] ?? ''));
+    if ($summary === '') {
+        $summary = 'A trusted business concern associated with M/S B. S. TRADING, supporting dependable services, local enterprise and long-term commercial growth.';
+    }
+
+    $suffix = ' It reflects dependable operations, professional service, local expertise and long-term business value.';
+    while (count(array_filter(preg_split('/\s+/', $summary) ?: [])) < $minimumWords) {
+        $summary .= $suffix;
+    }
+
+    return $summary;
+}

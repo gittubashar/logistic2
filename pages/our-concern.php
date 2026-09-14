@@ -28,11 +28,11 @@ require __DIR__ . '/../includes/page-header.php';
                             <?php endif; ?>
                             <span class="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-white/90 text-xs text-[#071426] shadow-sm transition group-hover:bg-amber-400"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                         </div>
-                        <div class="p-5">
-                            <p class="text-[10px] font-black uppercase tracking-[.18em] text-amber-700">Concern <?php echo e(str_pad((string) ($concern['sort_order'] ?? 0), 2, '0', STR_PAD_LEFT)); ?></p>
-                            <h2 class="mt-2 text-lg font-extrabold leading-6 tracking-[-.02em] text-[#071426]"><?php echo e($concern['title']); ?></h2>
-                            <?php if (!empty($concern['about_concern'])): ?><p class="mt-2 line-clamp-2 text-sm leading-6 text-slate-600"><?php echo e($concern['about_concern']); ?></p><?php endif; ?>
+                        <div class="p-5 text-center">
+                            <h3 class="text-sm font-extrabold leading-5 tracking-[-.01em] text-[#071426] sm:text-base"><?php echo e($concern['title']); ?></h3>
+                            <p class="mt-2 line-clamp-3 text-sm leading-6 text-slate-600"><?php echo e(our_concern_summary($concern)); ?></p>
                             <?php if (!empty($concern['website'])): ?><p class="mt-3 truncate text-xs font-bold text-slate-400"><i class="fa-solid fa-globe mr-1 text-amber-600"></i><?php echo e($concern['website']); ?></p><?php endif; ?>
+                            <span class="mt-4 inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-[10px] font-black uppercase tracking-[.14em] text-[#071426] transition group-hover:border-amber-400 group-hover:bg-amber-400"><span>Read More</span><i class="fa-solid fa-arrow-right text-[10px] text-amber-600 group-hover:text-[#071426]"></i></span>
                         </div>
                     </a>
                 <?php endforeach; ?>

@@ -27,6 +27,7 @@ $pageHeaderKicker = 'Our Concern';
 $pageHeaderTitle = $concern['title'];
 $pageHeaderText = $concern['about_concern'] ?: 'A concern associated with M/S B. S. TRADING.';
 $pageHeaderImage = $concern['image'] ?: 'uploads/page-header-bg.svg';
+$pageHeaderTitleClass = 'text-[clamp(1.8rem,4vw,3.6rem)]';
 require __DIR__ . '/includes/page-header.php';
 ?>
 <section class="bg-[#f4f5f2] py-14 lg:py-20">
@@ -41,7 +42,7 @@ require __DIR__ . '/includes/page-header.php';
             </div>
             <div class="p-6 sm:p-8">
                 <p class="text-[10px] font-black uppercase tracking-[.18em] text-amber-700">Concern profile</p>
-                <h2 class="mt-3 text-2xl font-extrabold tracking-[-.03em] text-[#071426]">About <?php echo e($concern['title']); ?></h2>
+                <h2 class="mt-3 text-lg font-extrabold tracking-[-.02em] text-[#071426] sm:text-xl">About <?php echo e($concern['title']); ?></h2>
                 <p class="mt-4 whitespace-pre-line text-base leading-8 text-slate-600"><?php echo e($concern['about_concern'] ?: 'Information about this concern will be published soon.'); ?></p>
             </div>
         </article>

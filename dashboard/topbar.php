@@ -2,32 +2,10 @@
 require_once __DIR__ . '/../includes/config.php';
 $adminProfile = admin_profile();
 
-$dashboardBreadcrumbLabels = [
-    'index.php' => 'Dashboard',
-    'page-manager.php' => 'Page Manager',
-    'post-manager.php' => 'Post Manager',
-    'section-manager.php' => 'Section Manager',
-    'team-members.php' => 'Team Members',
-    'membership-certificates.php' => 'Membership & Certificates',
-    'office-address.php' => 'Office Address',
-    'newsletter.php' => 'Newsletter',
-    'mailbox.php' => 'Mailbox',
-    'gallery.php' => 'Gallery',
-    'site-settings.php' => 'Site Settings',
-    'profile.php' => 'User Profile',
-];
-$dashboardCurrentFile = basename((string) ($_SERVER['SCRIPT_NAME'] ?? 'index.php'));
-$dashboardCurrentLabel = $dashboardPageLabel ?? ($dashboardBreadcrumbLabels[$dashboardCurrentFile] ?? ucwords(str_replace(['-', '.php'], [' ', ''], $dashboardCurrentFile)));
 ?>
 <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur lg:px-6">
     <div class="flex items-center justify-between gap-4">
-        <nav class="flex min-w-0 items-center gap-2 text-sm font-black" aria-label="Breadcrumb">
-            <a class="shrink-0 text-blue-700 hover:text-slate-950" href="<?php echo e(base_url('dashboard/index.php')); ?>">Dashboard</a>
-            <?php if ($dashboardCurrentFile !== 'index.php'): ?>
-                <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
-                <span class="truncate text-slate-700"><?php echo e($dashboardCurrentLabel); ?></span>
-            <?php endif; ?>
-        </nav>
+        <span class="text-sm font-black text-slate-700">Control panel</span>
         <div class="flex items-center gap-3">
             <a class="hidden items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-black text-blue-700 shadow-sm hover:bg-slate-50 sm:inline-flex" href="<?php echo e(base_url('index.php')); ?>" target="_blank">
                 <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i>Visit Website

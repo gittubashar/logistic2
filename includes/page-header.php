@@ -5,6 +5,7 @@ $pageHeaderKicker = $pageHeaderKicker ?? 'M/S B. S. Trading';
 $pageHeaderTitle = $pageHeaderTitle ?? ($pageTitle ?? $site['title']);
 $pageHeaderText = $pageHeaderText ?? '';
 $pageHeaderImage = $pageHeaderImage ?? '';
+$pageHeaderTitleClass = $pageHeaderTitleClass ?? 'text-[clamp(2.5rem,6vw,5.8rem)]';
 
 if ($pageHeaderImage === '' || str_ends_with(strtolower($pageHeaderImage), '.svg')) {
     $pageHeaderImage = 'uploads/gallery/20260712194416-c92c5107.jpg';
@@ -19,13 +20,8 @@ if ($pageHeaderImage === '' || str_ends_with(strtolower($pageHeaderImage), '.svg
 
     <div class="home-shell relative flex min-h-[350px] items-end py-12 sm:py-14 lg:min-h-[390px] lg:py-16">
         <div class="max-w-4xl">
-            <nav class="mb-9 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[.15em] text-slate-400" aria-label="Breadcrumb">
-                <a class="transition hover:text-amber-300" href="<?php echo e(base_url('index.php')); ?>">Home</a>
-                <i class="fa-solid fa-chevron-right text-[8px] text-slate-600"></i>
-                <span class="text-amber-300"><?php echo e($pageHeaderKicker); ?></span>
-            </nav>
             <p class="home-eyebrow home-eyebrow--light"><?php echo e($pageHeaderKicker); ?></p>
-            <h1 class="mt-5 max-w-4xl text-[clamp(2.5rem,6vw,5.8rem)] font-extrabold leading-[.98] tracking-[-.06em] text-white"><?php echo e($pageHeaderTitle); ?></h1>
+            <h1 class="mt-5 max-w-4xl <?php echo e($pageHeaderTitleClass); ?> font-extrabold leading-[.98] tracking-[-.06em] text-white"><?php echo e($pageHeaderTitle); ?></h1>
             <?php if ($pageHeaderText !== ''): ?>
                 <p class="mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg"><?php echo e($pageHeaderText); ?></p>
             <?php endif; ?>
