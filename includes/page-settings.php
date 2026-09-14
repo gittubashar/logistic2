@@ -56,6 +56,17 @@ function page_defaults(): array
             'content' => [],
             'content_html' => '',
         ],
+        'membership_certificates' => [
+            'label' => 'Membership & Certificates Page',
+            'path' => 'pages/membership-certificates.php',
+            'title' => 'Membership & Certificates - M/S B. S. Trading',
+            'header_kicker' => 'Credentials',
+            'header_title' => 'Membership & Certificates',
+            'header_text' => 'Licenses and affiliations supporting M/S B. S. TRADING shipping agency and customs operations.',
+            'header_image' => 'uploads/page-header-bg.svg',
+            'content' => [],
+            'content_html' => '',
+        ],
         'blog' => [
             'label' => 'Blog Page',
             'path' => 'blog.php',
@@ -66,6 +77,17 @@ function page_defaults(): array
             'header_image' => 'uploads/page-header-bg.svg',
             'content' => [],
             'content_html' => '',
+        ],
+        'our_concern' => [
+            'label' => 'Our Concern Page',
+            'path' => 'pages/our-concern.php',
+            'title' => 'Our Concern - M/S B. S. Trading',
+            'header_kicker' => 'Our Concern',
+            'header_title' => 'Our Concern',
+            'header_text' => 'The businesses and concerns associated with M/S B. S. TRADING.',
+            'header_image' => 'uploads/page-header-bg.svg',
+            'content' => [],
+            'content_html' => '<ul><li>M/S Bandarban Agency</li><li>Purabi Chair Coach</li><li>M/S Purabi Rice Agency</li><li>Purabi Transport Agency</li><li>M/S Bandarban Auto Rice Mill</li><li>Hotel Hill Bird</li><li>M/S Sukhendu Bikash Das</li><li>Hotel Purabi</li><li>M/S Sharothi Enterprise</li><li>Hotel Hill View</li></ul>',
         ],
         'international_freight_forwarding_agent' => [
             'label' => 'Licensed Customs Shipping Agent Page',
@@ -144,6 +166,11 @@ function page_defaults(): array
         ];
     }
 
+    foreach ($pages as &$page) {
+        $page['system_default'] = true;
+    }
+    unset($page);
+
     return $pages;
 }
 
@@ -172,7 +199,17 @@ function all_page_content(): array
     unset($saved['custom_pages']);
     unset($saved['company_profile']);
 
-    return section_merge(page_defaults(), $saved) + $customPages;
+    $defaults = page_defaults();
+    $pages = section_merge($defaults, $saved);
+
+    foreach (array_keys($defaults) as $key) {
+        if (isset($pages[$key]) && is_array($pages[$key])) {
+            $pages[$key]['system_default'] = true;
+            $pages[$key]['custom'] = false;
+        }
+    }
+
+    return $pages + $customPages;
 }
 
 function custom_pages(): array
@@ -181,6 +218,16 @@ function custom_pages(): array
     $customPages = $saved['custom_pages'] ?? [];
 
     return is_array($customPages) ? $customPages : [];
+}
+
+function page_is_custom(string $key, array $page = []): bool
+{
+    return !empty($page['custom']) || str_starts_with($key, 'custom_');
+}
+
+function page_type_label(string $key, array $page = []): string
+{
+    return page_is_custom($key, $page) ? 'Custom Page' : 'System Default';
 }
 
 function page_key_from_slug(string $slug): string

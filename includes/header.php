@@ -213,6 +213,9 @@ $pageTitle = $pageTitle ?? $site['title'];
                 <a class="rounded-full px-3 py-2.5 transition hover:bg-slate-100 hover:text-navy" href="<?php echo e(base_url('pages/about.php')); ?>">
                     About
                 </a>
+                <a class="rounded-full px-3 py-2.5 transition hover:bg-slate-100 hover:text-navy" href="<?php echo e(base_url('pages/our-concern.php')); ?>">
+                    Our Concern
+                </a>
                 <a class="rounded-full px-3 py-2.5 transition hover:bg-slate-100 hover:text-navy" href="<?php echo e(base_url('pages/membership-certificates.php')); ?>">
                     Credentials
                 </a>
@@ -271,6 +274,9 @@ $pageTitle = $pageTitle ?? $site['title'];
             </a>
             <a class="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-slate-100 hover:text-brand" href="<?php echo e(base_url('pages/about.php')); ?>">
                 <i class="fa-solid fa-circle-info w-5 text-brand"></i>About
+            </a>
+            <a class="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-slate-100 hover:text-brand" href="<?php echo e(base_url('pages/our-concern.php')); ?>">
+                <i class="fa-solid fa-building-columns w-5 text-brand"></i>Our Concern
             </a>
             <a class="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-slate-100 hover:text-brand" href="<?php echo e(base_url('pages/membership-certificates.php')); ?>">
                 <i class="fa-solid fa-award w-5 text-brand"></i>Membership & Certificates

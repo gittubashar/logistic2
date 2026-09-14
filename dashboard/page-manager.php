@@ -94,7 +94,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    if ($action !== 'add_page') {
+    if ($action === 'delete_page') {
+        $deleteKey = trim((string) ($_POST['page_key'] ?? ''));
+        $currentPages = all_page_content();
+        $saved = saved_page_settings();
+        $customPages = custom_pages();
+
+        if ($deleteKey === '' || !isset($customPages[$deleteKey]) || !page_is_custom($deleteKey, $currentPages[$deleteKey] ?? [])) {
+            $error = 'Only Custom Pages can be deleted.';
+        } else {
+            unset($customPages[$deleteKey]);
+            $saved['custom_pages'] = $customPages;
+
+            if (save_page_settings($saved)) {
+                $fallbackPage = array_key_first(page_defaults()) ?: 'about';
+                header('Location: ' . base_url('dashboard/page-manager.php?page=' . $fallbackPage . '&deleted=1'));
+                exit;
+            }
+
+            $error = 'Unable to delete page.';
+        }
+    }
+
+    if ($action !== 'add_page' && $action !== 'delete_page') {
         $activePage = $_POST['page_key'] ?? $activePage;
         $defaults = page_defaults();
         $settings = saved_page_settings();
@@ -129,10 +151,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pages = all_page_content();
+$systemPages = [];
+$customPageItems = [];
+foreach ($pages as $key => $page) {
+    if (page_is_custom($key, $page)) {
+        $customPageItems[$key] = $page;
+    } else {
+        $systemPages[$key] = $page;
+    }
+}
 $active = $pages[$activePage] ?? [];
 
 if (isset($_GET['created'])) {
     $message = 'New page created successfully.';
+}
+
+if (isset($_GET['deleted'])) {
+    $message = 'Custom page deleted successfully.';
 }
 
 if (($_GET['picked_image'] ?? '') !== '' && ($_GET['page'] ?? '') === $activePage) {
@@ -172,34 +207,71 @@ if ($editorHtml === '' && !empty($active['content'])) {
                 <div class="mb-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"><?php echo e($error); ?></div>
             <?php endif; ?>
 
-            <div class="grid gap-4 xl:grid-cols-[minmax(230px,20%)_minmax(0,80%)]">
-                <aside class="flex min-h-[calc(100vh-132px)] flex-col gap-3">
-                    <form class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm" method="post">
+            <div class="grid gap-5 xl:grid-cols-[minmax(290px,27%)_minmax(0,73%)] 2xl:grid-cols-[minmax(320px,25%)_minmax(0,75%)]">
+                <aside class="flex min-h-[calc(100vh-132px)] flex-col gap-3" data-page-sidebar>
+                    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-blue-700">Page control</p>
+                                <h2 class="mt-1 text-lg font-black text-slate-950">Manage pages</h2>
+                            </div>
+                            <span class="grid h-9 w-9 place-items-center rounded-xl bg-blue-50 text-blue-700"><i class="fa-solid fa-sliders"></i></span>
+                        </div>
+                        <div class="mt-4 grid grid-cols-2 gap-2 text-center">
+                            <div class="rounded-xl bg-slate-50 px-2 py-2"><strong class="block text-lg font-black text-slate-950"><?php echo count($systemPages); ?></strong><span class="text-[10px] font-bold uppercase tracking-wide text-slate-500">System default</span></div>
+                            <div class="rounded-xl bg-amber-50 px-2 py-2"><strong class="block text-lg font-black text-amber-700"><?php echo count($customPageItems); ?></strong><span class="text-[10px] font-bold uppercase tracking-wide text-amber-700">Custom page</span></div>
+                        </div>
+                    </div>
+
+                    <form class="rounded-2xl border border-blue-100 bg-blue-50/60 p-3 shadow-sm" method="post">
                         <?php echo csrf_field(); ?>
                         <input type="hidden" name="action" value="add_page">
-                        <p class="text-[11px] font-black uppercase tracking-[0.16em] text-blue-700">New Page</p>
+                        <p class="text-[11px] font-black uppercase tracking-[0.16em] text-blue-700"><i class="fa-solid fa-plus mr-1"></i>New Custom Page</p>
+                        <p class="mt-1 text-xs leading-5 text-slate-600">Create an editable page without changing the built-in system pages.</p>
                         <div class="mt-2 grid gap-2">
-                            <input class="rounded-lg border border-slate-300 px-3 py-2 text-sm" name="new_page_name" placeholder="Page name">
-                            <input class="rounded-lg border border-slate-300 px-3 py-2 text-sm" name="new_page_slug" placeholder="page-slug">
-                            <button class="rounded-lg bg-blue-700 px-4 py-2 text-sm font-black text-white hover:bg-slate-950" type="submit">
-                                <i class="fa-solid fa-plus mr-2"></i>Create
+                            <label class="text-[10px] font-black uppercase tracking-wide text-slate-500">Page name<input class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" name="new_page_name" placeholder="e.g. Sustainability" required></label>
+                            <label class="text-[10px] font-black uppercase tracking-wide text-slate-500">URL slug<input class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" name="new_page_slug" placeholder="sustainability" required></label>
+                            <button class="rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-black text-white hover:bg-slate-950" type="submit">
+                                <i class="fa-solid fa-plus mr-2"></i>Create Custom Page
                             </button>
                         </div>
                     </form>
 
                     <nav class="flex flex-1 flex-col rounded-2xl border border-slate-200 bg-white p-2 shadow-sm" data-page-nav>
-                        <div class="flex items-center justify-between px-2 py-1">
-                            <p class="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">Pages</p>
+                        <div class="flex items-center gap-2 px-2 py-1">
+                            <label class="sr-only" for="page-search">Search pages</label>
+                            <div class="relative flex-1"><i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i><input id="page-search" class="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-8 pr-2 text-xs font-semibold outline-none focus:border-blue-400" placeholder="Search pages..." data-page-search></div>
                             <span class="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-black text-slate-500"><?php echo count($pages); ?></span>
                         </div>
-                        <div class="mt-1 grid gap-0.5" data-page-list>
-                            <?php foreach ($pages as $key => $page): ?>
-                                <?php $page = $pages[$key]; ?>
-                                <a class="rounded-lg px-3 py-1.5 text-sm font-black leading-5 <?php echo $key === $activePage ? 'bg-blue-700 text-white shadow-sm' : 'text-slate-700 hover:bg-slate-100 hover:text-blue-700'; ?>" href="<?php echo e(base_url('dashboard/page-manager.php?page=' . $key)); ?>" data-page-item data-active="<?php echo $key === $activePage ? '1' : '0'; ?>">
-                                    <span class="block truncate"><?php echo e($page['label']); ?></span>
-                                    <span class="block truncate text-[10px] font-bold opacity-65"><?php echo e($page['path'] ?? ''); ?></span>
-                                </a>
-                            <?php endforeach; ?>
+                        <div class="mt-2 grid grid-cols-3 gap-1 rounded-lg bg-slate-100 p-1" data-page-filters>
+                            <button class="rounded-md bg-white px-2 py-1.5 text-[10px] font-black text-slate-700 shadow-sm" type="button" data-page-filter="all">All</button>
+                            <button class="rounded-md px-2 py-1.5 text-[10px] font-black text-slate-500 hover:text-blue-700" type="button" data-page-filter="system">System</button>
+                            <button class="rounded-md px-2 py-1.5 text-[10px] font-black text-slate-500 hover:text-amber-700" type="button" data-page-filter="custom">Custom</button>
+                        </div>
+                        <div class="mt-3 min-h-0 flex-1 overflow-y-auto pr-1" data-page-list>
+                            <p class="px-2 pb-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400" data-page-heading="system">System Default</p>
+                            <div class="grid gap-1" data-page-group="system">
+                                <?php foreach ($systemPages as $key => $page): ?>
+                                    <a class="group rounded-xl border border-transparent px-3 py-2 <?php echo $key === $activePage ? 'border-blue-200 bg-blue-50 text-blue-800' : 'text-slate-700 hover:border-slate-200 hover:bg-slate-50'; ?>" href="<?php echo e(base_url('dashboard/page-manager.php?page=' . $key)); ?>" data-page-item data-page-type="system" data-page-search-text="<?php echo e(strtolower(($page['label'] ?? '') . ' ' . ($page['path'] ?? ''))); ?>" data-active="<?php echo $key === $activePage ? '1' : '0'; ?>">
+                                        <span class="flex items-center gap-2"><i class="fa-solid fa-lock text-[10px] <?php echo $key === $activePage ? 'text-blue-600' : 'text-slate-400'; ?>"></i><span class="min-w-0 flex-1 truncate text-xs font-black"><?php echo e($page['label']); ?></span><span class="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-black uppercase text-slate-500">Default</span></span>
+                                        <span class="mt-1 block truncate pl-5 text-[10px] font-semibold text-slate-400"><?php echo e($page['path'] ?? ''); ?></span>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                            <p class="mt-4 px-2 pb-1 text-[10px] font-black uppercase tracking-[0.16em] text-amber-600" data-page-heading="custom">Custom Page</p>
+                            <div class="grid gap-1" data-page-group="custom">
+                                <?php if ($customPageItems): ?>
+                                    <?php foreach ($customPageItems as $key => $page): ?>
+                                        <a class="group rounded-xl border border-transparent px-3 py-2 <?php echo $key === $activePage ? 'border-amber-200 bg-amber-50 text-amber-800' : 'text-slate-700 hover:border-amber-100 hover:bg-amber-50/50'; ?>" href="<?php echo e(base_url('dashboard/page-manager.php?page=' . $key)); ?>" data-page-item data-page-type="custom" data-page-search-text="<?php echo e(strtolower(($page['label'] ?? '') . ' ' . ($page['path'] ?? ''))); ?>" data-active="<?php echo $key === $activePage ? '1' : '0'; ?>">
+                                            <span class="flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-[10px] <?php echo $key === $activePage ? 'text-amber-600' : 'text-slate-400'; ?>"></i><span class="min-w-0 flex-1 truncate text-xs font-black"><?php echo e($page['label']); ?></span><span class="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-black uppercase text-amber-700">Custom</span></span>
+                                            <span class="mt-1 block truncate pl-5 text-[10px] font-semibold text-slate-400"><?php echo e($page['path'] ?? ''); ?></span>
+                                        </a>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <p class="px-3 py-3 text-xs leading-5 text-slate-400">No custom pages yet. Use the form above to create one.</p>
+                                <?php endif; ?>
+                            </div>
+                            <p class="hidden px-3 py-4 text-xs text-slate-400" data-page-empty>No pages match your search.</p>
                         </div>
                         <div class="mt-auto hidden items-center justify-between border-t border-slate-100 pt-3" data-page-pager>
                             <button class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-xs font-black text-blue-700 hover:bg-blue-50 disabled:pointer-events-none disabled:text-slate-300" type="button" data-page-prev>
@@ -214,17 +286,36 @@ if ($editorHtml === '' && !empty($active['content'])) {
                 </aside>
 
                 <section class="min-w-0">
+            <?php if (page_is_custom($activePage, $active)): ?>
+                <form id="delete-custom-page-form" method="post" onsubmit="return confirm('Delete this custom page? This cannot be undone.');">
+                    <?php echo csrf_field(); ?><input type="hidden" name="action" value="delete_page"><input type="hidden" name="page_key" value="<?php echo e($activePage); ?>">
+                </form>
+            <?php endif; ?>
             <form class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:p-5" method="post" enctype="multipart/form-data" data-page-form>
                 <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="save_page">
                 <input type="hidden" name="page_key" value="<?php echo e($activePage); ?>">
-                <div class="mb-4 flex flex-col gap-2 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="mb-4 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="text-[11px] font-black uppercase tracking-[0.16em] text-blue-700">Editing</p>
+                        <div class="flex flex-wrap items-center gap-2"><p class="text-[11px] font-black uppercase tracking-[0.16em] text-blue-700">Editing</p><span class="rounded-full <?php echo page_is_custom($activePage, $active) ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'; ?> px-2.5 py-1 text-[10px] font-black uppercase tracking-wide"><?php echo e(page_type_label($activePage, $active)); ?></span></div>
                         <h2 class="mt-1 text-xl font-black text-slate-950"><?php echo e($active['label'] ?? 'Page'); ?></h2>
                     </div>
-                    <p class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500"><?php echo e($active['path'] ?? ''); ?></p>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <?php if (!empty($active['path'])): ?>
+                            <a class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-600 hover:border-blue-300 hover:text-blue-700" href="<?php echo e(base_url($active['path'])); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i>Preview</a>
+                        <?php endif; ?>
+                        <p class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500"><?php echo e($active['path'] ?? ''); ?></p>
+                    </div>
                 </div>
+
+                <?php if (page_is_custom($activePage, $active)): ?>
+                    <div class="mb-4 flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                        <p class="text-xs leading-5 text-amber-800"><i class="fa-solid fa-circle-info mr-1"></i>This is a Custom Page. You can edit or remove it at any time.</p>
+                        <button class="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-black text-red-600 hover:bg-red-50" type="submit" form="delete-custom-page-form"><i class="fa-solid fa-trash"></i>Delete page</button>
+                    </div>
+                <?php else: ?>
+                    <div class="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs leading-5 text-slate-600"><i class="fa-solid fa-lock mr-1 text-slate-400"></i>System Default page. Its built-in structure stays available; saved edits are stored as an override.</div>
+                <?php endif; ?>
 
                 <div class="grid gap-3 lg:grid-cols-2">
                     <label class="block text-xs font-black uppercase tracking-wide text-slate-600">Header Kicker
@@ -288,17 +379,27 @@ if ($editorHtml === '' && !empty($active['content'])) {
         const prev = document.querySelector('[data-page-prev]');
         const next = document.querySelector('[data-page-next]');
         const count = document.querySelector('[data-page-count]');
+        const search = document.querySelector('[data-page-search]');
+        const filters = Array.from(document.querySelectorAll('[data-page-filter]'));
+        const empty = document.querySelector('[data-page-empty]');
         const items = Array.from(document.querySelectorAll('[data-page-item]'));
 
         if (!nav || !list || !pager || !prev || !next || !count || !items.length) return;
 
         let currentPage = 1;
         let perPage = items.length;
+        let activeFilter = 'all';
+        let query = '';
 
-        const activeIndex = Math.max(0, items.findIndex(item => item.dataset.active === '1'));
+        const matchedItems = () => items.filter(item => {
+            const typeMatch = activeFilter === 'all' || item.dataset.pageType === activeFilter;
+            const searchMatch = query === '' || (item.dataset.pageSearchText || '').includes(query);
+            return typeMatch && searchMatch;
+        });
 
         const measureItemHeight = () => {
-            const clone = items[0].cloneNode(true);
+            const source = matchedItems()[0] || items[0];
+            const clone = source.cloneNode(true);
             clone.classList.remove('hidden');
             clone.style.visibility = 'hidden';
             clone.style.position = 'absolute';
@@ -311,7 +412,13 @@ if ($editorHtml === '' && !empty($active['content'])) {
         };
 
         const calculatePerPage = () => {
+            const matched = matchedItems();
             items.forEach(item => item.classList.add('hidden'));
+            if (!matched.length) {
+                pager.classList.add('hidden');
+                pager.classList.remove('flex');
+                return;
+            }
             pager.classList.remove('hidden');
             pager.classList.add('flex');
 
@@ -322,26 +429,36 @@ if ($editorHtml === '' && !empty($active['content'])) {
             const itemHeight = measureItemHeight() + 2;
 
             perPage = Math.max(1, Math.floor(availableHeight / itemHeight));
-            if (perPage >= items.length) {
-                perPage = items.length;
+            if (perPage >= matched.length) {
+                perPage = matched.length;
                 currentPage = 1;
                 pager.classList.add('hidden');
                 pager.classList.remove('flex');
             } else {
-                const activePage = Math.floor(activeIndex / perPage) + 1;
-                currentPage = Math.min(Math.max(currentPage, activePage), Math.ceil(items.length / perPage));
+                const activeIndex = Math.max(0, matched.findIndex(item => item.dataset.active === '1'));
+                const activePage = activeIndex >= 0 ? Math.floor(activeIndex / perPage) + 1 : 1;
+                currentPage = Math.min(Math.max(currentPage, activePage), Math.ceil(matched.length / perPage));
             }
         };
 
         const render = () => {
-            const totalPages = Math.max(1, Math.ceil(items.length / perPage));
+            const matched = matchedItems();
+            const totalPages = Math.max(1, Math.ceil(matched.length / Math.max(1, perPage)));
             currentPage = Math.min(Math.max(1, currentPage), totalPages);
             const start = (currentPage - 1) * perPage;
             const end = start + perPage;
 
-            items.forEach((item, index) => {
-                item.classList.toggle('hidden', index < start || index >= end);
+            items.forEach(item => {
+                item.classList.add('hidden');
             });
+            matched.slice(start, end).forEach(item => item.classList.remove('hidden'));
+
+            document.querySelectorAll('[data-page-group]').forEach(group => {
+                const hasVisible = matched.some(item => item.dataset.pageType === group.dataset.pageGroup);
+                group.classList.toggle('hidden', !hasVisible);
+                document.querySelector(`[data-page-heading="${group.dataset.pageGroup}"]`)?.classList.toggle('hidden', !hasVisible);
+            });
+            if (empty) empty.classList.toggle('hidden', matched.length > 0);
 
             count.textContent = `${currentPage} / ${totalPages}`;
             prev.disabled = currentPage <= 1;
@@ -357,6 +474,7 @@ if ($editorHtml === '' && !empty($active['content'])) {
         };
 
         const refresh = () => {
+            currentPage = 1;
             calculatePerPage();
             render();
         };
@@ -370,6 +488,23 @@ if ($editorHtml === '' && !empty($active['content'])) {
             currentPage += 1;
             render();
         });
+
+        search?.addEventListener('input', () => {
+            query = search.value.trim().toLowerCase();
+            refresh();
+        });
+
+        filters.forEach(button => button.addEventListener('click', () => {
+            activeFilter = button.dataset.pageFilter || 'all';
+            filters.forEach(filter => {
+                const selected = filter === button;
+                filter.classList.toggle('bg-white', selected);
+                filter.classList.toggle('shadow-sm', selected);
+                filter.classList.toggle('text-slate-700', selected);
+                filter.classList.toggle('text-slate-500', !selected);
+            });
+            refresh();
+        }));
 
         window.addEventListener('resize', refresh);
         refresh();

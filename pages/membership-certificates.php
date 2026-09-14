@@ -2,12 +2,13 @@
 require_once __DIR__ . '/../includes/config.php';
 
 $membership = membership_certificates(true);
-$pageTitle = 'Membership & Certificates - ' . $site['title'];
+$page = page_content('membership_certificates');
+$pageTitle = page_browser_title($page);
 require_once __DIR__ . '/../includes/header.php';
-$pageHeaderKicker = 'Credentials';
-$pageHeaderTitle = 'Membership & Certificates';
-$pageHeaderText = 'Memberships, licenses and certificates behind our logistics, customs and freight forwarding services.';
-$pageHeaderImage = 'uploads/page-header-bg.svg';
+$pageHeaderKicker = $page['header_kicker'] ?? 'Credentials';
+$pageHeaderTitle = $page['header_title'] ?? 'Membership & Certificates';
+$pageHeaderText = $page['header_text'] ?? '';
+$pageHeaderImage = $page['header_image'] ?? 'uploads/page-header-bg.svg';
 require __DIR__ . '/../includes/page-header.php';
 ?>
 <section class="bg-[#f4f5f2] py-14 lg:py-18">
