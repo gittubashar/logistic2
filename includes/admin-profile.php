@@ -134,6 +134,105 @@ function admin_first_user(): ?array
     return is_array($user) ? $user : null;
 }
 
+function admin_is_super_admin(): bool
+{
+    if (empty($_SESSION['admin_logged_in'])) {
+        return false;
+    }
+
+    if (db_schema_ensure()) {
+        $id = (int) ($_SESSION['admin_user_id'] ?? 0);
+        $user = $id > 0 ? admin_user_by_id($id) : null;
+
+        return is_array($user) && ($user['role'] ?? '') === 'super_admin';
+    }
+
+    return ($_SESSION['admin_role'] ?? '') === 'super_admin';
+}
+
+function require_super_admin(): void
+{
+    if (!admin_is_super_admin()) {
+        http_response_code(403);
+        exit('Super Admin access required.');
+    }
+}
+
+function admin_users_all(): array
+{
+    if (!db_schema_ensure()) {
+        return [];
+    }
+
+    return db()->query('SELECT id, name, email, phone, designation, role, image, is_active, created_at, updated_at FROM logistic_admin_users ORDER BY role DESC, name ASC')->fetchAll() ?: [];
+}
+
+function admin_user_save_record(array $user, ?int $id = null): bool
+{
+    if (!db_schema_ensure()) {
+        return false;
+    }
+
+    $name = trim((string) ($user['name'] ?? ''));
+    $email = trim((string) ($user['email'] ?? ''));
+    $phone = trim((string) ($user['phone'] ?? ''));
+    $designation = trim((string) ($user['designation'] ?? 'Admin')) ?: 'Admin';
+    $role = in_array(($user['role'] ?? 'admin'), ['admin', 'editor', 'super_admin'], true) ? $user['role'] : 'admin';
+    $image = trim((string) ($user['image'] ?? ''));
+    $active = !empty($user['is_active']) ? 1 : 0;
+    $passwordHash = (string) ($user['password_hash'] ?? '');
+
+    if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return false;
+    }
+
+    try {
+        if ($id !== null && $id > 0) {
+            $sql = 'UPDATE logistic_admin_users SET name = ?, email = ?, phone = ?, designation = ?, role = ?, image = ?, is_active = ?';
+            $params = [$name, $email, $phone, $designation, $role, $image, $active];
+            if ($passwordHash !== '') {
+                $sql .= ', password_hash = ?';
+                $params[] = $passwordHash;
+            }
+            $sql .= ' WHERE id = ?';
+            $params[] = $id;
+
+            return db()->prepare($sql)->execute($params);
+        }
+
+        if ($passwordHash === '') {
+            return false;
+        }
+
+        return db()->prepare('INSERT INTO logistic_admin_users (name, email, phone, designation, role, image, password_hash, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')->execute([$name, $email, $phone, $designation, $role, $image, $passwordHash, $active]);
+    } catch (Throwable) {
+        return false;
+    }
+}
+
+function admin_user_delete(int $id): bool
+{
+    if (!db_schema_ensure() || $id < 1 || $id === (int) ($_SESSION['admin_user_id'] ?? 0)) {
+        return false;
+    }
+
+    $lookup = db()->prepare('SELECT role, is_active FROM logistic_admin_users WHERE id = ? LIMIT 1');
+    $lookup->execute([$id]);
+    $user = $lookup->fetch();
+    if (!is_array($user)) {
+        return false;
+    }
+
+    if (($user['role'] ?? '') === 'super_admin') {
+        $activeSuperAdmins = (int) db()->query("SELECT COUNT(*) FROM logistic_admin_users WHERE role = 'super_admin' AND is_active = 1")->fetchColumn();
+        if ($activeSuperAdmins <= 1) {
+            return false;
+        }
+    }
+
+    return db()->prepare('DELETE FROM logistic_admin_users WHERE id = ?')->execute([$id]);
+}
+
 function dashboard_upload_is_valid(array $file, ?string $requiredExtension = null): bool
 {
     if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {

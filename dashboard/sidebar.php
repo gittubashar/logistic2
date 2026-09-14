@@ -26,6 +26,11 @@
         <a class="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-white/10" href="<?php echo e(base_url('dashboard/our-concern.php')); ?>">
             <i class="fa-solid fa-building-columns w-5 text-emerald-300"></i>Our Concern
         </a>
+        <?php if (admin_is_super_admin()): ?>
+            <a class="flex items-center gap-3 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-red-100 hover:bg-red-500/20" href="<?php echo e(base_url('dashboard/user-management.php')); ?>">
+                <i class="fa-solid fa-user-shield w-5 text-red-300"></i>User Management
+            </a>
+        <?php endif; ?>
         <a class="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-white/10" href="<?php echo e(base_url('dashboard/post-manager.php')); ?>">
             <i class="fa-solid fa-newspaper w-5 text-emerald-300"></i>Post Manager
         </a>

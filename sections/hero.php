@@ -25,7 +25,7 @@ if (($section['visible'] ?? true)):
             <div class="pointer-events-none absolute -left-20 top-32 h-64 w-64 rounded-full border border-white/[.06]" aria-hidden="true"></div>
             <div class="home-reveal relative max-w-3xl">
                 <p class="home-eyebrow home-eyebrow--light"><?php echo e($section['kicker'] ?? $site['since']); ?> · Bangladesh</p>
-                <h1 class="mt-6 text-[clamp(2.8rem,6vw,6.6rem)] font-extrabold leading-[.96] tracking-[-.065em] text-white">
+                <h1 class="mt-6 text-[clamp(2.35rem,5vw,5.1rem)] font-extrabold leading-[.96] tracking-[-.06em] text-white">
                     M/S B. S. <span class="text-amber-300">TRADING</span>
                 </h1>
                 <p class="mt-7 max-w-2xl text-base font-medium leading-8 text-slate-300 sm:text-lg"><?php echo section_rich_text((string) ($section['subtitle'] ?? $site['tagline'])); ?></p>

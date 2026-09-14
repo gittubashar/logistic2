@@ -5,7 +5,7 @@ $pageHeaderKicker = $pageHeaderKicker ?? 'M/S B. S. Trading';
 $pageHeaderTitle = $pageHeaderTitle ?? ($pageTitle ?? $site['title']);
 $pageHeaderText = $pageHeaderText ?? '';
 $pageHeaderImage = $pageHeaderImage ?? '';
-$pageHeaderTitleClass = $pageHeaderTitleClass ?? 'text-[clamp(2.5rem,6vw,5.8rem)]';
+$pageHeaderTitleClass = $pageHeaderTitleClass ?? 'text-[clamp(2rem,4.5vw,4.25rem)]';
 
 if ($pageHeaderImage === '' || str_ends_with(strtolower($pageHeaderImage), '.svg')) {
     $pageHeaderImage = 'uploads/gallery/20260712194416-c92c5107.jpg';
