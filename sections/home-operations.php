@@ -8,10 +8,10 @@ $credentials = array_values(array_filter(
     static fn ($item): bool => trim(strip_tags((string) $item)) !== ''
 ));
 $credentialLinks = $heroSection['highlight_links'] ?? [
-    'pages/international-freight-forwarding-agent.php',
-    'pages/bangladesh-customs-shipping-agent.php',
-    'pages/clearing-forwarding-agent.php',
-    'pages/govt-first-class-contractor.php',
+    'pages/membership-certificates.php',
+    'services.php',
+    'pages/customs-brokerage.php',
+    'pages/project-cargo.php',
 ];
 $profileDocument = $credentialsSection['profile_document'] ?? '';
 ?>
