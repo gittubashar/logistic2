@@ -233,26 +233,88 @@ function admin_user_delete(int $id): bool
     return db()->prepare('DELETE FROM logistic_admin_users WHERE id = ?')->execute([$id]);
 }
 
+function dashboard_upload_was_requested(array $file): bool
+{
+    return $file !== []
+        && ((int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE
+            || trim((string) ($file['name'] ?? '')) !== '');
+}
+
+function dashboard_upload_error_message(array $file, string $label = 'File'): string
+{
+    $error = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+
+    return match ($error) {
+        UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => $label . ' is larger than the server limit.',
+        UPLOAD_ERR_PARTIAL => $label . ' upload was interrupted. Please select it again.',
+        UPLOAD_ERR_NO_TMP_DIR => 'The server upload temporary directory is missing.',
+        UPLOAD_ERR_CANT_WRITE => 'The server could not write the uploaded ' . strtolower($label) . '.',
+        UPLOAD_ERR_EXTENSION => 'A server extension stopped the ' . strtolower($label) . ' upload.',
+        UPLOAD_ERR_NO_FILE => '',
+        default => $label . ' could not be uploaded. Please select it again.',
+    };
+}
+
+function dashboard_upload_set_error(string $message): void
+{
+    $GLOBALS['dashboard_upload_error'] = $message;
+}
+
+function dashboard_upload_last_error(): string
+{
+    return (string) ($GLOBALS['dashboard_upload_error'] ?? '');
+}
+
 function dashboard_upload_is_valid(array $file, ?string $requiredExtension = null): bool
 {
-    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+    dashboard_upload_set_error('');
+
+    if (!dashboard_upload_was_requested($file)) {
         return false;
     }
 
-    $extension = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
-    $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'ico', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'mp4', 'webm'];
+    $uploadError = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+    if ($uploadError !== UPLOAD_ERR_OK) {
+        dashboard_upload_set_error(dashboard_upload_error_message($file));
+        return false;
+    }
+
+    $temporaryPath = (string) ($file['tmp_name'] ?? '');
+    if ($temporaryPath === '' || !is_uploaded_file($temporaryPath)) {
+        dashboard_upload_set_error('The uploaded file could not be verified by the server.');
+        return false;
+    }
+
+    $extension = strtolower(pathinfo((string) ($file['name'] ?? ''), PATHINFO_EXTENSION));
+    $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'mp4', 'webm'];
 
     if (!in_array($extension, $allowed, true) || ($requiredExtension !== null && $extension !== strtolower($requiredExtension))) {
+        dashboard_upload_set_error('Unsupported file type. Please choose a JPG, PNG, GIF, WebP, SVG, ICO, document or supported video file.');
         return false;
     }
 
-    if ((int) ($file['size'] ?? 0) > 100 * 1024 * 1024) {
+    if ((int) ($file['size'] ?? 0) <= 0 || (int) ($file['size'] ?? 0) > 100 * 1024 * 1024) {
+        dashboard_upload_set_error('The maximum upload size is 100 MB.');
         return false;
     }
 
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    if (in_array($extension, $imageExtensions, true) && @getimagesize($file['tmp_name']) === false) {
+    if (in_array($extension, $imageExtensions, true) && @getimagesize($temporaryPath) === false) {
+        dashboard_upload_set_error('The selected file is not a valid image.');
         return false;
+    }
+
+    if ($extension === 'ico' && @file_get_contents($temporaryPath, false, null, 0, 4) !== "\x00\x00\x01\x00") {
+        dashboard_upload_set_error('The selected ICO file is invalid.');
+        return false;
+    }
+
+    if ($extension === 'svg') {
+        $svg = (string) @file_get_contents($temporaryPath);
+        if ($svg === '' || !preg_match('/<svg(?:\s|>)/i', $svg) || preg_match('/<script|on[a-z]+\s*=|javascript:/i', $svg)) {
+            dashboard_upload_set_error('The selected SVG is invalid or contains unsafe content.');
+            return false;
+        }
     }
 
     return true;
@@ -264,31 +326,42 @@ function upload_dashboard_file(array $file, string $folder = 'gallery'): ?string
         return null;
     }
 
-    $extension = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
+    $folder = trim(str_replace('\\', '/', $folder), '/');
+    if ($folder === '' || str_contains($folder, '..')) {
+        dashboard_upload_set_error('Invalid upload destination.');
+        return null;
+    }
 
-    $directory = __DIR__ . '/../uploads/' . trim($folder, '/');
+    $extension = strtolower(pathinfo((string) ($file['name'] ?? ''), PATHINFO_EXTENSION));
+    $directory = __DIR__ . '/../uploads/' . $folder;
 
-    if (!is_dir($directory)) {
-        mkdir($directory, 0775, true);
+    if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
+        dashboard_upload_set_error('The upload directory could not be created. Check its permissions.');
+        return null;
+    }
+    if (!is_writable($directory)) {
+        dashboard_upload_set_error('The upload directory is not writable. Check its permissions.');
+        return null;
     }
 
     $filename = date('YmdHis') . '-' . bin2hex(random_bytes(4)) . '.' . $extension;
     $target = $directory . '/' . $filename;
 
-    if (!move_uploaded_file($file['tmp_name'], $target)) {
+    if (!move_uploaded_file((string) $file['tmp_name'], $target)) {
+        dashboard_upload_set_error('The server could not save the uploaded file. Check the uploads folder permissions.');
         return null;
     }
 
-    $relativePath = 'uploads/' . trim($folder, '/') . '/' . $filename;
+    $relativePath = 'uploads/' . $folder . '/' . $filename;
 
-    if (trim($folder, '/') !== 'gallery') {
+    if ($folder !== 'gallery') {
         $galleryDirectory = __DIR__ . '/../uploads/gallery';
-
         if (!is_dir($galleryDirectory)) {
             mkdir($galleryDirectory, 0775, true);
         }
-
-        copy($target, $galleryDirectory . '/' . $filename);
+        if (is_dir($galleryDirectory) && is_writable($galleryDirectory)) {
+            @copy($target, $galleryDirectory . '/' . $filename);
+        }
     }
 
     return $relativePath;

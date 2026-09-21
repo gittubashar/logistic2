@@ -127,14 +127,19 @@ if (is_dir($galleryDirectory)) {
             continue;
         }
 
+        $absolutePath = __DIR__ . '/../uploads/gallery/' . $file;
+        if (!is_file($absolutePath)) {
+            continue;
+        }
+
         $path = 'uploads/gallery/' . $file;
         $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
         $files[] = [
             'name' => $file,
             'path' => $path,
             'extension' => $extension,
-            'size' => filesize(__DIR__ . '/../' . $path) ?: 0,
-            'modified' => filemtime(__DIR__ . '/../' . $path) ?: time(),
+            'size' => filesize($absolutePath) ?: 0,
+            'modified' => filemtime($absolutePath) ?: time(),
             'type' => match (true) {
                 in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'], true) => 'image',
                 in_array($extension, ['mp4', 'webm'], true) => 'video',

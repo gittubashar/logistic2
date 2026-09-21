@@ -3,10 +3,23 @@ require_once __DIR__ . '/../includes/config.php';
 
 $credentialsSection = section_content('company_profile');
 $heroSection = section_content('hero');
+$legacyCredentialPattern = '/(?:International\s+Freight\s+Forwarding\s+Agent|Bangladesh\s+Customs\s+Shipping\s+Agent|Clearing\s*(?:&|and)\s*Forwarding\s+Agent|Govt\.?\s+First\s+Class\s+Contractor)/i';
 $credentials = array_values(array_filter(
     $heroSection['highlights'] ?? ($credentialsSection['items'] ?? []),
-    static fn ($item): bool => trim(strip_tags((string) $item)) !== ''
+    static function ($item) use ($legacyCredentialPattern): bool {
+        return trim(strip_tags((string) $item)) !== ''
+            && !preg_match($legacyCredentialPattern, strip_tags((string) $item));
+    }
 ));
+$safeCredentials = [
+    'Port Agency & Vessel Husbandry',
+    'Crew Management & Repatriation',
+    'Customs Brokerage / C&F Agent',
+    'Stevedoring & Cargo Supervision',
+];
+if (!$credentials) {
+    $credentials = $safeCredentials;
+}
 $credentialLinks = $heroSection['highlight_links'] ?? [
     'pages/membership-certificates.php',
     'services.php',

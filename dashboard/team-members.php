@@ -44,8 +44,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = $isNew ? 'team-' . bin2hex(random_bytes(5)) : $id;
         $existing = find_team_member($allMembers, $id);
         $image = trim($_POST['image'] ?? ($existing['image'] ?? ''));
+        $teamUpload = $_FILES['image_upload'] ?? [];
         $uploaded = team_member_upload();
         $image = $uploaded ?: $image;
+        if (!$uploaded && dashboard_upload_was_requested($teamUpload)) {
+            $error = dashboard_upload_last_error() ?: 'Team member image could not be uploaded.';
+        }
 
         $memberData = normalize_team_member([
             'id' => $id,
@@ -57,9 +61,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'visible' => isset($_POST['visible']),
         ]);
 
-        if ($memberData['name'] === '') {
+        if ($error === '' && $memberData['name'] === '') {
             $error = 'Team member name is required.';
-        } else {
+        } elseif ($error === '') {
             if ($isNew) {
                 $allMembers[] = $memberData;
             } else {

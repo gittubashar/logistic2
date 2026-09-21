@@ -147,6 +147,7 @@ $sectionKeys = array_values(array_filter(
 $activeSection = $_GET['section'] ?? ($sectionKeys[0] ?? 'hero');
 $activeSection = in_array($activeSection, $sectionKeys, true) ? $activeSection : ($sectionKeys[0] ?? 'hero');
 $message = '';
+$error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
@@ -159,10 +160,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'visible' => isset($_POST['visible']),
     ];
     $extraSaved = true;
+    $uploadSectionFile = static function (array $file, string $folder) use (&$error): ?string {
+        $uploaded = upload_dashboard_file($file, $folder);
+        if (!$uploaded && dashboard_upload_was_requested($file)) {
+            $error = dashboard_upload_last_error() ?: 'The selected file could not be uploaded.';
+        }
+
+        return $uploaded;
+    };
 
     if ($activeSection === 'hero') {
         $image = trim($_POST['image'] ?? '');
-        $uploadedImage = upload_dashboard_file($_FILES['image_upload'] ?? [], 'sections');
+        $uploadedImage = $uploadSectionFile($_FILES['image_upload'] ?? [], 'sections');
         $image = $uploadedImage ?: $image;
         $highlights = [];
         $highlightLinks = [];
@@ -202,10 +211,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif ($activeSection === 'about') {
         $image = trim($_POST['image'] ?? '');
-        $uploadedImage = upload_dashboard_file($_FILES['image_upload'] ?? [], 'sections');
+        $uploadedImage = $uploadSectionFile($_FILES['image_upload'] ?? [], 'sections');
         $image = $uploadedImage ?: $image;
         $profileDocument = trim($_POST['profile_document'] ?? '');
-        $uploadedDocument = upload_dashboard_file($_FILES['profile_document_upload'] ?? [], 'documents');
+        $uploadedDocument = $uploadSectionFile($_FILES['profile_document_upload'] ?? [], 'documents');
         $profileDocument = $uploadedDocument ?: $profileDocument;
 
         $payload += [
@@ -231,7 +240,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $image = trim($_POST['item_image'][$index] ?? '');
-            $uploadedImage = upload_dashboard_file(multi_upload_file('item_image_upload', $index), 'sections');
+            $uploadedImage = $uploadSectionFile(multi_upload_file('item_image_upload', $index), 'sections');
             $image = $uploadedImage ?: $image;
 
             $payload['items'][] = [
@@ -249,10 +258,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
     } elseif ($activeSection === 'company_profile') {
         $image = trim($_POST['image'] ?? '');
-        $uploadedImage = upload_dashboard_file($_FILES['image_upload'] ?? [], 'sections');
+        $uploadedImage = $uploadSectionFile($_FILES['image_upload'] ?? [], 'sections');
         $image = $uploadedImage ?: $image;
         $profileDocument = trim($_POST['profile_document'] ?? '');
-        $uploadedDocument = upload_dashboard_file($_FILES['profile_document_upload'] ?? [], 'documents');
+        $uploadedDocument = $uploadSectionFile($_FILES['profile_document_upload'] ?? [], 'documents');
         $profileDocument = $uploadedDocument ?: $profileDocument;
 
         $payload += [
@@ -299,7 +308,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $uploadedFiles = $_FILES['masonry_upload'] ?? null;
         if ($uploadedFiles && is_array($uploadedFiles['name'])) {
             foreach ($uploadedFiles['name'] as $uploadIndex => $fileName) {
-                $uploadedImage = upload_dashboard_file([
+                $uploadedImage = $uploadSectionFile([
                     'name' => $fileName,
                     'type' => $uploadedFiles['type'][$uploadIndex] ?? '',
                     'tmp_name' => $uploadedFiles['tmp_name'][$uploadIndex] ?? '',
@@ -326,7 +335,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $extraSaved = save_masonry_gallery_items($masonryPayload);
     } elseif ($activeSection === 'office') {
         $image = trim($_POST['image'] ?? '');
-        $uploadedImage = upload_dashboard_file($_FILES['image_upload'] ?? [], 'sections');
+        $uploadedImage = $uploadSectionFile($_FILES['image_upload'] ?? [], 'sections');
         $payload['image'] = $uploadedImage ?: $image;
         $payload['items'] = [];
         foreach (($_POST['office_name'] ?? []) as $index => $name) {
@@ -338,8 +347,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    $settings[$activeSection] = $payload;
-    $message = (save_section_settings($settings) && $extraSaved) ? 'Section settings saved successfully.' : 'Unable to save section settings.';
+    if ($error === '') {
+        $settings[$activeSection] = $payload;
+        $message = (save_section_settings($settings) && $extraSaved) ? 'Section settings saved successfully.' : 'Unable to save section settings.';
+    }
 }
 
 $sections = array_filter(
@@ -409,6 +420,9 @@ $pageTitle = 'Section Manager - ' . $site['title'];
     <main class="px-5 pb-5 pt-0 lg:px-8 lg:pb-8 lg:pt-0">
         <?php if ($message): ?>
             <div class="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 font-bold text-emerald-800"><?php echo e($message); ?></div>
+        <?php endif; ?>
+        <?php if ($error): ?>
+            <div class="mb-5 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 font-bold text-red-700"><?php echo e($error); ?></div>
         <?php endif; ?>
 
         <div class="mb-5 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">

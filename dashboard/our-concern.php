@@ -31,8 +31,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = $isNew ? 'concern-' . bin2hex(random_bytes(5)) : $id;
         $existing = find_our_concern($allConcerns, $id);
         $image = trim((string) ($_POST['image'] ?? ($existing['image'] ?? '')));
-        $uploaded = upload_dashboard_file($_FILES['image_upload'] ?? [], 'concerns');
+        $concernImageUpload = $_FILES['image_upload'] ?? [];
+        $uploaded = upload_dashboard_file($concernImageUpload, 'concerns');
         $image = $uploaded ?: $image;
+        if (!$uploaded && dashboard_upload_was_requested($concernImageUpload)) {
+            $error = dashboard_upload_last_error() ?: 'Concern image could not be uploaded.';
+        }
         $title = trim((string) ($_POST['title'] ?? ''));
 
         $item = normalize_our_concern([
@@ -46,9 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'visible' => isset($_POST['visible']),
         ]);
 
-        if ($item['title'] === '') {
+        if ($error === '' && $item['title'] === '') {
             $error = 'Concern title is required.';
-        } else {
+        } elseif ($error === '') {
             if ($isNew) {
                 $allConcerns[] = $item;
             } else {

@@ -18,8 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = post_delete((int) ($_POST['id'] ?? 0)) ? 'Post deleted.' : 'Unable to delete post.';
     } else {
         $image = trim($_POST['image'] ?? '');
-        $uploadedImage = upload_dashboard_file($_FILES['image_upload'] ?? [], 'posts');
+        $postImageUpload = $_FILES['image_upload'] ?? [];
+        $uploadedImage = upload_dashboard_file($postImageUpload, 'posts');
         $image = $uploadedImage ?: $image;
+        if (!$uploadedImage && dashboard_upload_was_requested($postImageUpload)) {
+            $error = dashboard_upload_last_error() ?: 'Featured image could not be uploaded.';
+        }
 
         $payload = [
             'id' => (int) ($_POST['id'] ?? 0),
@@ -32,9 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'published_at' => trim($_POST['published_at'] ?? ''),
         ];
 
-        if ($payload['title'] === '') {
+        if ($error === '' && $payload['title'] === '') {
             $error = 'Post title is required.';
-        } else {
+        } elseif ($error === '') {
             $message = post_save($payload) ? 'Post saved successfully.' : 'Unable to save post. Check duplicate slug.';
         }
     }

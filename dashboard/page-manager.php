@@ -123,8 +123,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $allPagesForCurrent = all_page_content();
         $current = $allPagesForCurrent[$activePage] ?? ($defaults[$activePage] ?? []);
         $headerImage = trim($_POST['header_image'] ?? ($current['header_image'] ?? ''));
-        $uploadedImage = upload_dashboard_file($_FILES['header_image_upload'] ?? [], 'pages');
+        $pageImageUpload = $_FILES['header_image_upload'] ?? [];
+        $uploadedImage = upload_dashboard_file($pageImageUpload, 'pages');
         $headerImage = $uploadedImage ?: $headerImage;
+        if (!$uploadedImage && dashboard_upload_was_requested($pageImageUpload)) {
+            $error = dashboard_upload_last_error() ?: 'Page header image could not be uploaded.';
+        }
         $headerTitle = trim($_POST['header_title'] ?? '');
 
         $pagePayload = [
@@ -146,7 +150,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $settings[$activePage] = $pagePayload;
         }
 
-        $message = save_page_settings($settings) ? 'Page settings saved successfully.' : 'Unable to save page settings.';
+        if ($error === '') {
+            $message = save_page_settings($settings) ? 'Page settings saved successfully.' : 'Unable to save page settings.';
+        }
     }
 }
 

@@ -18,6 +18,7 @@ function membership_upload_from_array(array $files, int $index): array
 }
 
 $message = '';
+$error = '';
 $membership = membership_certificates(false);
 $newItem = ['id' => '', 'title' => '', 'type' => '', 'issuer' => '', 'date' => '', 'description' => '', 'image' => '', 'document' => '', 'visible' => true];
 
@@ -42,14 +43,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $image = trim($_POST['image'][$index] ?? '');
         if (isset($imageUploads['name'][$index])) {
-            $uploadedImage = upload_dashboard_file(membership_upload_from_array($imageUploads, $index), 'certificates');
+            $imageUpload = membership_upload_from_array($imageUploads, $index);
+            $uploadedImage = upload_dashboard_file($imageUpload, 'certificates');
             $image = $uploadedImage ?: $image;
+            if (!$uploadedImage && dashboard_upload_was_requested($imageUpload)) {
+                $error = dashboard_upload_last_error() ?: 'Certificate image could not be uploaded.';
+            }
         }
 
         $document = trim($_POST['document'][$index] ?? '');
         if (isset($documentUploads['name'][$index])) {
-            $uploadedDocument = upload_dashboard_file(membership_upload_from_array($documentUploads, $index), 'certificates');
+            $documentUpload = membership_upload_from_array($documentUploads, $index);
+            $uploadedDocument = upload_dashboard_file($documentUpload, 'certificates');
             $document = $uploadedDocument ?: $document;
+            if (!$uploadedDocument && dashboard_upload_was_requested($documentUpload)) {
+                $error = dashboard_upload_last_error() ?: 'Certificate document could not be uploaded.';
+            }
         }
 
         $items[] = [
@@ -65,15 +74,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
     }
 
-    $membership = [
-        'kicker' => trim($_POST['kicker'] ?? 'Membership & Certificates'),
-        'title' => trim($_POST['page_title'] ?? ''),
-        'subtitle' => trim($_POST['subtitle'] ?? ''),
-        'items' => $items,
-    ];
+    if ($error === '') {
+        $membership = [
+            'kicker' => trim($_POST['kicker'] ?? 'Membership & Certificates'),
+            'title' => trim($_POST['page_title'] ?? ''),
+            'subtitle' => trim($_POST['subtitle'] ?? ''),
+            'items' => $items,
+        ];
 
-    $message = save_membership_certificates($membership) ? 'Membership & Certificates saved successfully.' : 'Unable to save membership data.';
-    $membership = membership_certificates(false);
+        $message = save_membership_certificates($membership) ? 'Membership & Certificates saved successfully.' : 'Unable to save membership data.';
+        $membership = membership_certificates(false);
+    }
 }
 
 $pageTitle = 'Membership & Certificates - ' . $site['title'];
@@ -95,6 +106,9 @@ $pageTitle = 'Membership & Certificates - ' . $site['title'];
         <main class="px-5 pb-5 pt-0 lg:px-8 lg:pb-8 lg:pt-0">
             <?php if ($message): ?>
                 <div class="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-800"><?php echo e($message); ?></div>
+            <?php endif; ?>
+            <?php if ($error): ?>
+                <div class="mb-4 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-bold text-red-700"><?php echo e($error); ?></div>
             <?php endif; ?>
 
             <form class="grid gap-4" method="post" enctype="multipart/form-data">

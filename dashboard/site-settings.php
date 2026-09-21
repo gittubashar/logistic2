@@ -125,9 +125,21 @@ if ($canSaveSettings) {
     $logoImage = trim($_POST['logo_image'] ?? '');
     $footerLogoImage = trim($_POST['footer_logo_image'] ?? '');
     $favicon = trim($_POST['favicon'] ?? '');
-    $uploadedLogo = upload_dashboard_file($_FILES['logo_upload'] ?? [], 'settings');
-    $uploadedFooterLogo = upload_dashboard_file($_FILES['footer_logo_upload'] ?? [], 'settings');
-    $uploadedFavicon = upload_dashboard_file($_FILES['favicon_upload'] ?? [], 'settings');
+    $logoUpload = $_FILES['logo_upload'] ?? [];
+    $footerLogoUpload = $_FILES['footer_logo_upload'] ?? [];
+    $faviconUpload = $_FILES['favicon_upload'] ?? [];
+    $uploadedLogo = upload_dashboard_file($logoUpload, 'settings');
+    if (!$uploadedLogo && dashboard_upload_was_requested($logoUpload)) {
+        $error = dashboard_upload_last_error() ?: 'Header logo could not be uploaded.';
+    }
+    $uploadedFooterLogo = upload_dashboard_file($footerLogoUpload, 'settings');
+    if ($error === '' && !$uploadedFooterLogo && dashboard_upload_was_requested($footerLogoUpload)) {
+        $error = dashboard_upload_last_error() ?: 'Footer logo could not be uploaded.';
+    }
+    $uploadedFavicon = upload_dashboard_file($faviconUpload, 'settings');
+    if ($error === '' && !$uploadedFavicon && dashboard_upload_was_requested($faviconUpload)) {
+        $error = dashboard_upload_last_error() ?: 'Favicon could not be uploaded.';
+    }
     $buttonPayload = [];
     $uploadedProfileDocument = '';
 
@@ -206,7 +218,7 @@ if ($canSaveSettings) {
         ],
     ];
 
-    $siteSaved = save_site_settings($settings);
+    $siteSaved = $error === '' && save_site_settings($settings);
     $buttonsSaved = $error === '' && save_site_button_settings($buttonPayload, $profileDocument);
 
     if ($siteSaved && $buttonsSaved) {

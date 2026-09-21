@@ -34,9 +34,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $profile['image'] = $selectedImage;
     }
 
-    $uploaded = upload_dashboard_file($_FILES['profile_image'] ?? [], 'profile');
+    $profileUpload = $_FILES['profile_image'] ?? [];
+    $uploaded = upload_dashboard_file($profileUpload, 'profile');
     if ($uploaded) {
         $profile['image'] = $uploaded;
+    } elseif (dashboard_upload_was_requested($profileUpload)) {
+        $error = dashboard_upload_last_error() ?: 'Profile image could not be uploaded.';
     }
 
     $newPassword = (string) ($_POST['new_password'] ?? '');
