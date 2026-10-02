@@ -3,3 +3,5 @@
 Thumbs.db
 .env
 /uploads
+.htaccess
+config/database.php

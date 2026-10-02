@@ -33,7 +33,7 @@ if (($section['visible'] ?? true)):
                 <h2 class="mt-5 max-w-xl text-3xl font-extrabold leading-tight tracking-[-.04em] text-white sm:text-4xl">The documents behind dependable delivery.</h2>
                 <p class="mt-5 max-w-xl text-sm leading-7 text-slate-400">See the capabilities, memberships and operating credentials that support our freight and customs work.</p>
                 <?php if ($profileDocument): ?>
-                    <a class="mt-8 inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-amber-400 px-6 text-sm font-bold text-[#071426] transition hover:bg-amber-300" href="<?php echo e(base_url($profileDocument)); ?>" target="_blank" download><i class="fa-solid fa-file-arrow-down"></i><?php echo e($profileLabel); ?></a>
+                    <a class="mt-8 inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-amber-400 px-6 text-sm font-bold text-[#071426] transition hover:bg-amber-300" href="<?php echo e(base_url($profileDocument)); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-file-pdf"></i><?php echo e($profileLabel); ?></a>
                 <?php endif; ?>
             </div>
             <?php if ($highlights): ?>
