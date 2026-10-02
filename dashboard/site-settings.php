@@ -185,6 +185,11 @@ if ($canSaveSettings) {
         ];
     }
 
+    $replyBccEmail = trim((string) ($_POST['smtp_reply_bcc_email'] ?? ''));
+    if ($replyBccEmail !== '' && filter_var($replyBccEmail, FILTER_VALIDATE_EMAIL) === false) {
+        $error = 'Contact reply BCC email must be a valid email address.';
+    }
+
     $settings = [
         'title' => trim($_POST['title'] ?? ''),
         'since' => trim($_POST['since'] ?? ''),
@@ -215,6 +220,7 @@ if ($canSaveSettings) {
             'encryption' => trim($_POST['smtp_encryption'] ?? 'tls'),
             'from_email' => trim($_POST['smtp_from_email'] ?? ''),
             'from_name' => trim($_POST['smtp_from_name'] ?? ''),
+            'reply_bcc_email' => $replyBccEmail,
         ],
     ];
 
@@ -435,6 +441,10 @@ $pageTitle = 'Site Settings - ' . $site['title'];
                         </label>
                         <label class="block text-sm font-black text-slate-600">From Email
                             <input class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3" type="email" name="smtp_from_email" value="<?php echo e($settings['smtp']['from_email'] ?? ''); ?>">
+                        </label>
+                        <label class="block text-sm font-black text-slate-600 lg:col-span-3">Contact Reply BCC Email <span class="font-normal text-slate-400">(optional)</span>
+                            <input class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3" type="email" name="smtp_reply_bcc_email" value="<?php echo e($settings['smtp']['reply_bcc_email'] ?? ''); ?>" placeholder="copy@example.com">
+                            <span class="mt-1 block text-xs font-normal leading-5 text-slate-500">Every reply sent from Mailbox will also be copied to this address privately.</span>
                         </label>
                         <label class="block text-sm font-black text-slate-600 lg:col-span-3">From Name
                             <input class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3" name="smtp_from_name" value="<?php echo e($settings['smtp']['from_name'] ?? ''); ?>">

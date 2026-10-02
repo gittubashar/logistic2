@@ -32,6 +32,7 @@ function site_setting_defaults(array $site): array
             'encryption' => 'tls',
             'from_email' => $site['email'],
             'from_name' => $site['title'],
+            'reply_bcc_email' => '',
         ],
     ];
 }

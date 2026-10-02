@@ -49,8 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 . '<p style="margin-bottom:0;margin-top:28px;color:#64748b">Regards,<br><strong>' . e((string) ($site['smtp']['from_name'] ?? $site['title'])) . '</strong></p>'
                 . '</div></div></div>';
             $smtpError = '';
+            $replyBcc = trim((string) ($site['smtp']['reply_bcc_email'] ?? ''));
 
-            if (smtp_send_html_email((string) $contact['email'], $replySubject, $emailBody, '', $smtpError)) {
+            if (smtp_send_html_email((string) $contact['email'], $replySubject, $emailBody, '', $smtpError, $replyBcc)) {
                 if (contact_message_record_reply($selectedId, $replySubject, $replyBody)) {
                     $_SESSION['mailbox_message'] = 'Reply sent successfully to ' . $contact['email'] . '.';
                 } else {

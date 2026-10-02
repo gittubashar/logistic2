@@ -49,18 +49,23 @@ function smtp_header_text(string $value): string
         : $value;
 }
 
-function smtp_send_html_email(string $to, string $subject, string $htmlBody, string $replyTo = '', ?string &$error = null): bool
+function smtp_send_html_email(string $to, string $subject, string $htmlBody, string $replyTo = '', ?string &$error = null, string $bcc = ''): bool
 {
     global $site;
 
     $error = '';
     $smtp = $site['smtp'] ?? [];
     $to = trim($to);
+    $bcc = trim($bcc);
     $fromEmail = trim((string) ($smtp['from_email'] ?? ''));
     $fromName = trim((string) ($smtp['from_name'] ?? ($site['title'] ?? 'Website')));
 
     if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
         $error = 'The recipient email address is invalid.';
+        return false;
+    }
+    if ($bcc !== '' && !filter_var($bcc, FILTER_VALIDATE_EMAIL)) {
+        $error = 'The BCC email address is invalid.';
         return false;
     }
     if (!smtp_is_configured($smtp)) {
@@ -126,6 +131,7 @@ function smtp_send_html_email(string $to, string $subject, string $htmlBody, str
 
         if (!smtp_command($socket, 'MAIL FROM:<' . $fromEmail . '>', [250], $error)
             || !smtp_command($socket, 'RCPT TO:<' . $to . '>', [250, 251], $error)
+            || ($bcc !== '' && !smtp_command($socket, 'RCPT TO:<' . $bcc . '>', [250, 251], $error))
             || !smtp_command($socket, 'DATA', [354], $error)) {
             return false;
         }

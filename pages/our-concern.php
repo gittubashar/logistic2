@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/config.php';
 
 $page = page_content('our_concern');
+$latestPosts = array_slice(posts_all(true), 0, 9);
 $pageTitle = page_browser_title($page);
 require_once __DIR__ . '/../includes/header.php';
 $pageHeaderKicker = $page['header_kicker'] ?? 'Our Concern';
@@ -39,6 +40,42 @@ require __DIR__ . '/../includes/page-header.php';
             </div>
         <?php else: ?>
             <div class="border-y border-dashed border-slate-300 py-12 text-center text-sm text-slate-500">No concerns published yet.</div>
+        <?php endif; ?>
+    </div>
+</section>
+<section class="bg-white py-14 lg:py-20">
+    <div class="home-shell">
+        <div class="mb-8 flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="home-eyebrow">From the operations desk</p>
+                <h2 class="mt-3 text-2xl font-extrabold tracking-[-.035em] text-[#071426] sm:text-3xl">Latest posts</h2>
+            </div>
+            <a class="inline-flex items-center justify-center gap-2 rounded-full bg-[#071426] px-5 py-2.5 text-xs font-black uppercase tracking-[.14em] text-white transition hover:bg-[#102845]" href="<?php echo e(base_url('blog.php')); ?>">All Posts <i class="fa-solid fa-arrow-right text-[10px] text-amber-300"></i></a>
+        </div>
+
+        <?php if ($latestPosts): ?>
+            <div class="grid gap-5 sm:grid-cols-2 md:grid-cols-3">
+                <?php foreach ($latestPosts as $post): ?>
+                    <?php $postUrl = base_url('post.php?slug=' . rawurlencode((string) $post['slug'])); ?>
+                    <article class="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-[0_18px_45px_rgba(7,20,38,.08)]">
+                        <a class="block aspect-[16/9] overflow-hidden bg-[#102845]" href="<?php echo e($postUrl); ?>">
+                            <?php if (!empty($post['image'])): ?>
+                                <img class="h-full w-full object-cover transition duration-500 group-hover:scale-105" src="<?php echo e(base_url($post['image'])); ?>" alt="<?php echo e($post['title']); ?>" loading="lazy">
+                            <?php else: ?>
+                                <div class="grid h-full place-items-center text-2xl text-amber-300"><i class="fa-solid fa-compass-drafting"></i></div>
+                            <?php endif; ?>
+                        </a>
+                        <div class="p-5">
+                            <p class="text-[10px] font-black uppercase tracking-[.16em] text-amber-700"><?php echo e(date('M j, Y', strtotime((string) ($post['published_at'] ?? 'now')))); ?></p>
+                            <h3 class="mt-2 line-clamp-2 text-lg font-extrabold leading-6 text-[#071426]"><a href="<?php echo e($postUrl); ?>"><?php echo e($post['title']); ?></a></h3>
+                            <?php if (!empty($post['excerpt'])): ?><p class="mt-2 line-clamp-3 text-sm leading-6 text-slate-600"><?php echo e($post['excerpt']); ?></p><?php endif; ?>
+                            <a class="mt-4 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[.14em] text-[#071426] transition group-hover:text-amber-700" href="<?php echo e($postUrl); ?>">Read More <i class="fa-solid fa-arrow-right text-[10px] text-amber-600"></i></a>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div class="border-y border-dashed border-slate-300 py-10 text-center text-sm text-slate-500">No published posts yet.</div>
         <?php endif; ?>
     </div>
 </section>

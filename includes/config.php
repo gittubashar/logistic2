@@ -43,6 +43,13 @@ function csrf_is_valid(): bool
 function require_csrf(): void
 {
     if (!csrf_is_valid()) {
+        $contentLength = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
+        $contentType = strtolower((string) ($_SERVER['CONTENT_TYPE'] ?? ''));
+        if ($contentLength > 0 && str_contains($contentType, 'multipart/form-data') && empty($_POST)) {
+            http_response_code(413);
+            exit('Upload request is too large for the server. Please increase PHP post_max_size and try again.');
+        }
+
         http_response_code(419);
         exit('Invalid session token. Please refresh the page and try again.');
     }

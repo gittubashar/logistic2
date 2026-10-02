@@ -13,8 +13,8 @@ if ($pageHeaderImage === '' || str_ends_with(strtolower($pageHeaderImage), '.svg
 ?>
 <section class="compact-page-header relative overflow-hidden bg-[#071426] text-white">
     <div class="absolute inset-0">
-        <img class="h-full w-full object-cover object-center opacity-35" src="<?php echo e(base_url($pageHeaderImage)); ?>" alt="" aria-hidden="true">
-        <div class="absolute inset-0 bg-gradient-to-r from-[#071426] via-[#071426]/90 to-[#071426]/35"></div>
+        <img class="h-full w-full object-cover object-center opacity-60" src="<?php echo e(base_url($pageHeaderImage)); ?>" alt="" aria-hidden="true">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#071426]/75 via-[#071426]/50 to-[#071426]/10"></div>
         <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,.035)_1px,transparent_1px)] bg-[length:96px_100%]"></div>
     </div>
 

@@ -33,17 +33,24 @@ if (($section['visible'] ?? true)):
                 <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                     <?php foreach (array_slice($heroButtons, 0, 3) as $index => $button): ?>
                         <?php
-                        $buttonUrl = $button['url'] ?? '#';
-                        if (($button['label'] ?? '') === 'Download Company Profile') {
+                        $buttonUrl = trim((string) ($button['url'] ?? '')) ?: '#';
+                        if (($button['label'] ?? '') === 'Download Company Profile' && $buttonUrl === '#') {
                             $buttonUrl = $aboutSection['profile_document'] ?: ($companyProfileSection['profile_document'] ?? $buttonUrl);
                         }
-                        $buttonClasses = $index === 0
-                            ? 'bg-amber-400 text-[#071426] hover:bg-amber-300'
-                            : 'border border-white/20 bg-white/[.06] text-white hover:border-white/40 hover:bg-white/10';
+                        $buttonStyle = strtolower(trim((string) ($button['style'] ?? '')));
+                        $buttonClasses = match ($buttonStyle) {
+                            'orange' => 'bg-amber-400 text-[#071426] hover:bg-amber-300',
+                            'brand' => 'bg-white text-[#071426] hover:bg-slate-100',
+                            'aqua' => 'border border-cyan-300/60 bg-cyan-300/10 text-cyan-100 hover:border-cyan-200 hover:bg-cyan-300/20',
+                            default => $index === 0
+                                ? 'bg-amber-400 text-[#071426] hover:bg-amber-300'
+                                : 'border border-white/20 bg-white/[.06] text-white hover:border-white/40 hover:bg-white/10',
+                        };
+                        $buttonIcon = $buttonStyle === 'orange' || $index === 0 ? 'fa-arrow-up-right-from-square' : 'fa-arrow-right';
                         ?>
                         <a class="inline-flex min-h-[52px] items-center justify-center gap-3 rounded-full px-6 py-3.5 text-sm font-bold transition hover:-translate-y-0.5 <?php echo e($buttonClasses); ?>" href="<?php echo e(base_url($buttonUrl)); ?>"<?php echo str_contains((string) ($button['label'] ?? ''), 'Profile') ? ' target="_blank" rel="noopener"' : ''; ?>>
                             <?php echo e($button['label'] ?? 'Learn More'); ?>
-                            <i class="fa-solid <?php echo $index === 0 ? 'fa-arrow-up-right-from-square' : 'fa-arrow-right'; ?> text-xs"></i>
+                            <i class="fa-solid <?php echo e($buttonIcon); ?> text-xs"></i>
                         </a>
                     <?php endforeach; ?>
                 </div>

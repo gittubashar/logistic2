@@ -130,6 +130,7 @@ function render_document_picker(string $label, string $inputName, string $value,
                     </a>
                     <label class="inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-black text-slate-700 hover:bg-white">
                         <i class="fa-solid fa-upload mr-2"></i>Pick from computer
+                        <input type="hidden" name="MAX_FILE_SIZE" value="104857600">
                         <input class="hidden" type="file" name="<?php echo e($uploadName); ?>" accept=".pdf,.doc,.docx,.xls,.xlsx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
                     </label>
                 </div>
@@ -173,28 +174,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $image = trim($_POST['image'] ?? '');
         $uploadedImage = $uploadSectionFile($_FILES['image_upload'] ?? [], 'sections');
         $image = $uploadedImage ?: $image;
-        $highlights = [];
-        $highlightLinks = [];
-
-        foreach (($_POST['highlight_label'] ?? []) as $index => $label) {
-            $label = trim((string) $label);
-            $url = trim($_POST['highlight_url'][$index] ?? '');
-
-            if ($label === '') {
-                continue;
-            }
-
-            $highlights[] = $label;
-            $highlightLinks[] = $url;
-        }
-
         $payload += [
             'kicker' => trim($_POST['kicker'] ?? ''),
             'title' => trim($_POST['title'] ?? ''),
             'subtitle' => trim($_POST['subtitle'] ?? ''),
             'image' => $image,
-            'highlights' => $highlights,
-            'highlight_links' => $highlightLinks,
+            'highlights' => [
+                'Port Agency & Vessel Husbandry',
+                'Crew Management & Repatriation',
+                'Customs Brokerage / C&F Agent',
+                'Stevedoring & Cargo Supervision',
+            ],
+            'highlight_links' => [
+                'pages/membership-certificates.php',
+                'services.php',
+                'pages/customs-brokerage.php',
+                'pages/project-cargo.php',
+            ],
             'buttons' => [],
         ];
 
@@ -461,46 +457,11 @@ $pageTitle = 'Section Manager - ' . $site['title'];
             <?php endif; ?>
 
             <?php if ($activeSection === 'hero'): ?>
-                <?php
-                $heroDefaultHighlightLinks = [
-                    'port agency & vessel husbandry' => 'pages/shipping-agent.php',
-                    'crew management & repatriation' => 'pages/sea-freight.php',
-                    'customs brokerage / c&f agent' => 'pages/customs-brokerage.php',
-                    'stevedoring & cargo supervision' => 'pages/project-cargo.php',
-                ];
-                $heroDefaultHighlightLinksByIndex = [
-                    'pages/shipping-agent.php',
-                    'pages/sea-freight.php',
-                    'pages/customs-brokerage.php',
-                    'pages/project-cargo.php',
-                ];
-                $heroHighlightLabels = array_values($active['highlights'] ?? []);
-                $heroHighlightUrls = array_values($active['highlight_links'] ?? []);
-                $heroHighlightRows = [];
-                foreach ($heroHighlightLabels as $index => $label) {
-                    $label = (string) $label;
-                    $key = strtolower(preg_replace('/\s+/', ' ', trim(strip_tags($label))));
-                    $heroHighlightRows[] = [
-                        'label' => $label,
-                        'url' => $heroHighlightUrls[$index] ?? ($heroDefaultHighlightLinks[$key] ?? ($heroDefaultHighlightLinksByIndex[$index] ?? '')),
-                    ];
-                }
-                $heroHighlightRows[] = ['label' => '', 'url' => ''];
-                ?>
                 <div class="mt-4 grid gap-4 lg:grid-cols-2">
                     <label class="block text-sm font-black text-slate-600">Subtitle
                         <textarea class="mt-2 min-h-28 w-full rounded-xl border border-slate-300 px-4 py-3 leading-7 outline-none focus:border-blue-500" name="subtitle"><?php echo e($active['subtitle'] ?? ''); ?></textarea>
                     </label>
                     <?php render_image_picker('Background Image', 'image', $active['image'] ?? '', $activeSection, 'image', 'image_upload'); ?>
-                </div>
-                <div class="mt-6 grid gap-3">
-                    <p class="text-sm font-black uppercase tracking-[0.18em] text-blue-700">Right Highlight Cards</p>
-                    <?php foreach ($heroHighlightRows as $highlight): ?>
-                        <div class="grid gap-3 rounded-2xl bg-slate-50 p-4 lg:grid-cols-[1fr_1fr]">
-                            <input class="rounded-xl border border-slate-300 px-4 py-3" name="highlight_label[]" value="<?php echo e($highlight['label']); ?>" placeholder="Highlight text">
-                            <input class="rounded-xl border border-slate-300 px-4 py-3" name="highlight_url[]" value="<?php echo e($highlight['url']); ?>" placeholder="Highlight URL">
-                        </div>
-                    <?php endforeach; ?>
                 </div>
                 <div class="mt-6 grid gap-3">
                     <p class="text-sm font-black uppercase tracking-[0.18em] text-blue-700">Buttons</p>
