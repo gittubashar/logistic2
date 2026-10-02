@@ -4,7 +4,7 @@ require_once __DIR__ . '/../includes/config.php';
 $section = section_content('about');
 $legacySection = section_content('company_profile');
 $heroSection = section_content('hero');
-$profileDocument = $section['profile_document'] ?? ($legacySection['profile_document'] ?? '');
+$profileDocument = trim((string) ($section['profile_document'] ?? '')) ?: trim((string) ($legacySection['profile_document'] ?? ''));
 $profileLabel = $section['profile_document_label'] ?? ($legacySection['profile_document_label'] ?? 'Download Company Profile');
 $legacyCredentialPattern = '/(?:International\s+Freight\s+Forwarding\s+Agent|Bangladesh\s+Customs\s+Shipping\s+Agent|Clearing\s*(?:&|and)\s*Forwarding\s+Agent|Govt\.?\s+First\s+Class\s+Contractor)/i';
 $highlights = array_values(array_filter(

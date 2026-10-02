@@ -4,6 +4,7 @@ require_once __DIR__ . '/../includes/config.php';
 $section = section_content('hero');
 $aboutSection = section_content('about');
 $companyProfileSection = section_content('company_profile');
+$profileDocument = trim((string) ($aboutSection['profile_document'] ?? '')) ?: trim((string) ($companyProfileSection['profile_document'] ?? ''));
 
 if (($section['visible'] ?? true)):
     $heroImage = (string) ($section['image'] ?? '');
@@ -30,12 +31,13 @@ if (($section['visible'] ?? true)):
                 </h1>
                 <p class="mt-7 max-w-2xl text-base font-medium leading-8 text-slate-300 sm:text-lg"><?php echo section_rich_text((string) ($section['subtitle'] ?? $site['tagline'])); ?></p>
 
-                <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <div class="mt-9 flex flex-col items-start gap-3">
                     <?php foreach (array_slice($heroButtons, 0, 3) as $index => $button): ?>
                         <?php
                         $buttonUrl = trim((string) ($button['url'] ?? '')) ?: '#';
-                        if (($button['label'] ?? '') === 'Download Company Profile' && $buttonUrl === '#') {
-                            $buttonUrl = $aboutSection['profile_document'] ?: ($companyProfileSection['profile_document'] ?? $buttonUrl);
+                        $isProfileButton = stripos((string) ($button['label'] ?? ''), 'profile') !== false;
+                        if ($isProfileButton && $profileDocument !== '') {
+                            $buttonUrl = $profileDocument;
                         }
                         $buttonStyle = strtolower(trim((string) ($button['style'] ?? '')));
                         $buttonClasses = match ($buttonStyle) {
@@ -48,7 +50,7 @@ if (($section['visible'] ?? true)):
                         };
                         $buttonIcon = $buttonStyle === 'orange' || $index === 0 ? 'fa-arrow-up-right-from-square' : 'fa-arrow-right';
                         ?>
-                        <a class="inline-flex min-h-[52px] items-center justify-center gap-3 rounded-full px-6 py-3.5 text-sm font-bold transition hover:-translate-y-0.5 <?php echo e($buttonClasses); ?>" href="<?php echo e(base_url($buttonUrl)); ?>"<?php echo str_contains((string) ($button['label'] ?? ''), 'Profile') ? ' target="_blank" rel="noopener"' : ''; ?>>
+                        <a class="inline-flex min-h-[52px] items-center justify-center gap-3 rounded-full px-6 py-3.5 text-sm font-bold transition hover:-translate-y-0.5 <?php echo e($buttonClasses); ?>" href="<?php echo e(base_url($buttonUrl)); ?>"<?php echo $isProfileButton ? ' target="_blank" rel="noopener"' : ''; ?>>
                             <?php echo e($button['label'] ?? 'Learn More'); ?>
                             <i class="fa-solid <?php echo e($buttonIcon); ?> text-xs"></i>
                         </a>
